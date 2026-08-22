@@ -1,5 +1,7 @@
 # rust-ace
 
+[![checks](https://github.com/byteproof-systems/rust-ace/actions/workflows/checks.yml/badge.svg)](https://github.com/byteproof-systems/rust-ace/actions/workflows/checks.yml)
+
 ACE 6.5.24, translated to Rust — **byte-identical to native, and you can
 verify it yourself**.
 
@@ -72,6 +74,16 @@ Issues — especially failing scenarios or proposed new differential test
 cases — are welcome. Pull requests against generated files under
 `crate/src/` cannot be merged meaningfully; PRs to the driver, tests,
 verification tooling, and docs are.
+
+## About
+
+rust-ace is published by Byteproof Systems. We build automated,
+verification-first translation of legacy C++ to Rust — fidelity first
+(this repository), safety lifting second. ACE is the first public
+artifact; TAO and OpenDDS are next.
+
+Pilots, evaluations, or a codebase you want translated:
+**admin@byteproof.dev** · X: [@byteproofhq](https://x.com/byteproofhq)
 
 ## License
 
