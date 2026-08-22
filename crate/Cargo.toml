@@ -1,0 +1,38 @@
+[package]
+name = "rust-ace"
+version = "6.5.24"
+edition = "2021"
+publish = false
+license-file = "LICENSE"
+description = "ACE 6.5.24 translated to Rust; byte-identical to native under a 145-scenario differential."
+
+[lib]
+name = "rust_ace"
+crate-type = ["staticlib"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+codegen-units = 64
+
+[dependencies]
+libc = { version = "0.2", default-features = false }
+
+[lints.rust]
+# Generated code: per-module declarations of shared C++-ABI symbols carry
+# module-local record types, and C-layout records flow through extern
+# signatures wholesale. These lint classes fire en masse on that pattern
+# without indicating defects; behavioural correctness is established by
+# the byte-identical differential (see verify/).
+improper_ctypes = "allow"
+improper_ctypes_definitions = "allow"
+clashing_extern_declarations = "allow"
+unused_must_use = "allow"
+unused_labels = "allow"
+unreachable_code = "allow"
+static_mut_refs = "allow"
+function_casts_as_integer = "allow"
+unpredictable_function_pointer_comparisons = "allow"
+stable_features = "allow"

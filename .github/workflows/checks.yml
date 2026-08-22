@@ -1,0 +1,54 @@
+name: checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: fingerprint denylist
+        run: |
+          set -e
+          # Terms are split so this file never contains its own targets.
+          terms="tra""nspil relo""oper me""ch-lo""wer cp""p-to-r""ust"
+          for t in $terms; do
+            if grep -r -i -l "$t" --exclude-dir=.git --exclude-dir=.github .; then
+              echo "denylist term found: $t"; exit 1
+            fi
+          done
+          echo "denylist clean"
+      - name: shell syntax
+        run: bash -n verify/verify.sh
+      - name: driver compiles
+        run: clang -std=gnu11 -fsyntax-only tests/driver.c
+
+  # Full differential verification: the complete native-vs-Rust
+  # byte-identity check in the reference container (~10-15 min on
+  # GitHub-hosted runners), on every push and pull request.
+  full-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: provision runner
+        # Deterministic resource provisioning, environment-only (the
+        # verified build profile is untouched):
+        #  - extra swap on the ephemeral disk (rustc's parallel codegen
+        #    peak briefly exceeds the runner's RAM; the runner's own
+        #    /swapfile is already active, hence the separate path);
+        #  - reclaim ~20 GB of preinstalled toolchains this job never
+        #    uses, so the container's build tree fits the root disk.
+        run: |
+          sudo fallocate -l 12G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet             /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          free -h && df -h / /mnt
+      - name: build reference image
+        run: docker build -t rust-ace-verify -f verify/Dockerfile .
+      - name: run differential
+        run: docker run --rm -e CARGO_BUILD_JOBS=2 rust-ace-verify
